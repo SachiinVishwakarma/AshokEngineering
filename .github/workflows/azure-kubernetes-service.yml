@@ -1,0 +1,85 @@
+# This workflow will build and push an application to a Azure Kubernetes Service (AKS) cluster when you push your code
+#
+# This workflow assumes you have already created the target AKS cluster and have created an Azure Container Registry (ACR)
+# The ACR should be attached to the AKS cluster
+# For instructions see:
+#   - https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough-portal
+#   - https://docs.microsoft.com/en-us/azure/container-registry/container-registry-get-started-portal
+#   - https://learn.microsoft.com/en-us/azure/aks/cluster-container-registry-integration?tabs=azure-cli#configure-acr-integration-for-existing-aks-clusters
+#   - https://github.com/Azure/aks-create-action
+#
+# To configure this workflow:
+#
+# 1. Set the following secrets in your repository (instructions for getting these can be found at https://docs.microsoft.com/en-us/azure/developer/github/connect-from-azure?tabs=azure-cli%2Clinux):
+#    - AZURE_CLIENT_ID
+#    - AZURE_TENANT_ID
+#    - AZURE_SUBSCRIPTION_ID
+#
+# 2. Set the following environment variables (or replace the values below):
+#    - AZURE_CONTAINER_REGISTRY (name of your container registry / ACR)
+#    - RESOURCE_GROUP (where your cluster is deployed)
+#    - CLUSTER_NAME (name of your AKS cluster)
+#    - CONTAINER_NAME (name of the container image you would like to push up to your ACR)
+#    - IMAGE_PULL_SECRET_NAME (name of the ImagePullSecret that will be created to pull your ACR image)
+#    - DEPLOYMENT_MANIFEST_PATH (path to the manifest yaml for your deployment)
+#
+# For more information on GitHub Actions for Azure, refer to https://github.com/Azure/Actions
+# For more samples to get started with GitHub Action workflows to deploy to Azure, refer to https://github.com/Azure/actions-workflow-samples
+# For more options with the actions used below please refer to https://github.com/Azure/login
+
+name: Deploy to AKS
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+env:
+  AZURE_CONTAINER_REGISTRY: "myappregistry789"
+  CONTAINER_NAME: "react-app"
+  RESOURCE_GROUP: "myapp-rg"
+  CLUSTER_NAME: "myapp-cluster"
+  DEPLOYMENT_MANIFEST_PATH: "deployment.yaml"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    
+    - name: Login to ACR
+      uses: azure/docker-login@v1
+      with:
+        login-server: ${{ secrets.ACR_NAME }}.azurecr.io
+        username: ${{ secrets.ACR_USERNAME }}
+        password: ${{ secrets.ACR_PASSWORD }}
+    
+    - name: Build and Push Docker Image
+      run: |
+        docker build -t ${{ secrets.ACR_NAME }}.azurecr.io/react-app:${{ github.sha }} .
+        docker push ${{ secrets.ACR_NAME }}.azurecr.io/react-app:${{ github.sha }}
+        docker tag ${{ secrets.ACR_NAME }}.azurecr.io/react-app:${{ github.sha }} ${{ secrets.ACR_NAME }}.azurecr.io/react-app:latest
+        docker push ${{ secrets.ACR_NAME }}.azurecr.io/react-app:latest
+    
+    - name: Set AKS Context
+      run: |
+        az aks get-credentials --resource-group ${{ secrets.AKS_RESOURCE_GROUP }} --name ${{ secrets.AKS_CLUSTER_NAME }}
+    
+    - name: Deploy to AKS
+      run: |
+        sed -i "s|image:.*|image: ${{ secrets.ACR_NAME }}.azurecr.io/react-app:${{ github.sha }}|" deployment.yaml
+        kubectl apply -f deployment.yaml
+        kubectl apply -f service.yaml
+        kubectl rollout status deployment/react-app
+    
+    - name: Get Service IP
+      run: |
+        echo "Waiting for LoadBalancer IP..."
+        sleep 30
+        kubectl get svc react-app-service
