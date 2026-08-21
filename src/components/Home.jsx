@@ -20,8 +20,8 @@ const Home = () => {
         </span>
 
         <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold text-white tracking-tight">
-          Ashok xyz    <br className="hidden sm:inline" />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-yellow-500">Works Shop</span>
+          Ashok Engineering <br className="hidden sm:inline" />
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-yellow-500">Workshop</span>
         </h1>
 
         <p className="text-xl text-slate-400 max-w-2xl mx-auto font-light">
