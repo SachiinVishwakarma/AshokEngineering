@@ -7,7 +7,7 @@ const Home = () => {
   return (
     <section id="home" className="relative min-h-screen flex items-center justify-center bg-slate-950 pt-20 overflow-hidden">
       {/* Heavy Industrial Background Overlay */}
-      <div 
+      <div
         className="absolute inset-0 bg-cover bg-center opacity-20 mix-blend-luminosity"
         style={{ backgroundImage: `url('https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&q=80&w=1200')` }}
       />
@@ -18,9 +18,9 @@ const Home = () => {
         <span className="inline-block text-orange-500 font-semibold tracking-widest text-sm uppercase bg-orange-500/10 px-4 py-1.5 rounded-full border border-orange-500/30">
           Heavy Duty Fabrication Specialist
         </span>
-        
+
         <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold text-white tracking-tight">
-          Ashok Engineering <br className="hidden sm:inline" />
+          Ashok xyz    <br className="hidden sm:inline" />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-yellow-500">Works Shop</span>
         </h1>
 
@@ -31,9 +31,9 @@ const Home = () => {
         {/* Dynamic Hotline Boxes */}
         <div className="bg-slate-900/80 border border-slate-800 p-6 rounded-xl max-w-3xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4 shadow-2xl backdrop-blur-sm">
           {phoneNumbers.map((num, idx) => (
-            <a 
-              key={idx} 
-              href={`tel:${num}`} 
+            <a
+              key={idx}
+              href={`tel:${num}`}
               className="flex items-center justify-center gap-3 bg-slate-950 hover:bg-orange-600 border border-slate-700 hover:border-orange-500 p-3 rounded-lg text-slate-200 hover:text-white transition-all duration-300 group shadow-md"
             >
               <Phone className="h-4 w-4 text-orange-500 group-hover:text-white transition-colors" />
